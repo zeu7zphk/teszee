@@ -3,14 +3,32 @@
 
 -- Helper functions
 local GetPlayer = function()
-    return game.Players.LocalPlayer
+    return Game.Players.LocalPlayer
+end
+
+Explode = function(String)
+    local List = {}
+    for Item in string.gmatch(String, "%S+") do
+        table.insert(List, Item)
+    end
+    return List
 end
 
 local function GetPlayers(String)
+    local List = Explode(String)
     local Players = {}
-    for _, Player in pairs(game.Players:GetPlayers()) do
-        if Player.Name:lower():sub(1, #String) == String:lower() then
-            table.insert(Players, Player)
+    for Index, Value in pairs(List) do
+        for Index, Player in pairs(Game.Players:GetPlayers()) do
+            if Value:lower() == "all" then
+                table.insert(Players, Player)
+            elseif Value:lower() == "me" then
+                table.insert(Players, Game.Players.LocalPlayer)
+                break
+            else
+                if Player.Name:lower():sub(1, #Value) == Value:lower() then
+                    table.insert(Players, Player)
+                end
+            end
         end
     end
     return Players
