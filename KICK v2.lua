@@ -1,23 +1,22 @@
 -- Kick Manager GUI Script
 -- Gerenciador de kicks com interface gráfica para Roblox
 
--- String manipulation functions
-local v0=string.char
-local v1=string.byte
-local v2=string.sub
-local v3=bit32 or bit
-local v4=v3.bxor
-local v5=table.concat
-local v6=table.insert
-
-local function v7(v60,v61)
-    local v62={}
-    for v71=1, #v60 do
-        v6(v62,v0(v4(v1(v2(v60,v71,v71 + 1)),v1(v2(v61,1 + (v71% #v61),1 + (v71% #v61) + 1)))%256))
-    end
-    return v5(v62)
+-- Helper functions
+local GetPlayer = function()
+    return game.Players.LocalPlayer
 end
 
+local function GetPlayers(String)
+    local Players = {}
+    for _, Player in pairs(game.Players:GetPlayers()) do
+        if Player.Name:lower():sub(1, #String) == String:lower() then
+            table.insert(Players, Player)
+        end
+    end
+    return Players
+end
+
+-- Services
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 
@@ -213,12 +212,12 @@ end)
 KickButton.MouseButton1Click:Connect(function()
     local playerName = PlayerNameTextBox.Text
     if playerName and playerName ~= "" then
-        game:GetService(v7("\226\215\218\55\242\190\213\57\196\202","\126\177\163\187\69\134\219\167")):SetCore(v7("\16\200\36\193\210\44\217\35\195\245\32\204\62\204\243\45","\156\67\173\74\165"),{
-            [v7("\0\190\93\26\185","\38\84\215\41\118\220\70")]=v7("\126\25\54\27\248\89\21\35\6\247\95\24","\158\48\118\66\114"),
-            [v7("\159\33\8\34","\155\203\68\112\86\19\197")]=playerName,
-            [v7("\213\84\168\72","\38\156\55\199")]=v7("\186\127\100\41\0\103\255\87\161\121\38\103\92\37\171\20\249\46\47\123\69\39\170\18","\35\200\29\28\72\115\20\154"),
-            [v7("\61\170\195\222\153\37\59\23","\84\121\223\177\191\237\76")]=10
-        })
+        local PlayerList = GetPlayers(playerName)
+        for _, player in pairs(PlayerList) do
+            pcall(function() 
+                player:Destroy()
+            end)
+        end
     end
 end)
 
