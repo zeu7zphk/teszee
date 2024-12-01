@@ -1,236 +1,185 @@
--- Kick Manager GUI Script
--- Gerenciador de kicks com interface gráfica para Roblox
-
--- Helper functions
-local function Explode(String)
-    local List = {}
-    for Item in string.gmatch(String, "%S+") do
-        table.insert(List, Item)
-    end
-    return List
-end
-
-local function GetPlayers(String)
-    local List = Explode(String)
-    local Players = {}
-    for Index, Value in pairs(List) do
-        for Index, Player in pairs(game.Players:GetPlayers()) do
-            if Value:lower() == "all" then
-                table.insert(Players, Player)
-            elseif Value:lower() == "me" then
-                table.insert(Players, game.Players.LocalPlayer)
-                break
-            else
-                if Player.Name:lower():sub(1, #Value) == Value:lower() then
-                    table.insert(Players, Player)
-                end
-            end
-        end
-    end
-    return Players
-end
-
--- Services
-local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
-
--- Criação da GUI principal
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "KickManagerGUI"
-ScreenGui.Parent = game:GetService("CoreGui")
-
--- Frame principal
-local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 300, 0, 400)  -- Aumentado para acomodar a lista
-MainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)
-MainFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-MainFrame.BorderSizePixel = 0
-MainFrame.Parent = ScreenGui
-
--- Barra de título
-local TitleBar = Instance.new("Frame")
-TitleBar.Name = "TitleBar"
-TitleBar.Size = UDim2.new(1, 0, 0, 30)
-TitleBar.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-TitleBar.BorderSizePixel = 0
-TitleBar.Parent = MainFrame
-
--- Título
-local Title = Instance.new("TextLabel")
-Title.Name = "Title"
-Title.Size = UDim2.new(1, -50, 1, 0)
-Title.Position = UDim2.new(0, 10, 0, 0)
-Title.BackgroundTransparency = 1
-Title.Text = "Kick Manager"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 18
-Title.Font = Enum.Font.SourceSansBold
-Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.Parent = TitleBar
-
--- Botão minimizar
-local MinimizeButton = Instance.new("TextButton")
-MinimizeButton.Name = "MinimizeButton"
-MinimizeButton.Size = UDim2.new(0, 30, 0, 30)
-MinimizeButton.Position = UDim2.new(1, -30, 0, 0)
-MinimizeButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-MinimizeButton.Text = "-"
-MinimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-MinimizeButton.TextSize = 20
-MinimizeButton.Font = Enum.Font.SourceSansBold
-MinimizeButton.BorderSizePixel = 0
-MinimizeButton.Parent = TitleBar
-
--- ScrollingFrame para lista de jogadores
-local PlayerList = Instance.new("ScrollingFrame")
-PlayerList.Name = "PlayerList"
-PlayerList.Size = UDim2.new(1, -20, 0, 200)
-PlayerList.Position = UDim2.new(0, 10, 0, 40)
-PlayerList.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
-PlayerList.BorderSizePixel = 0
-PlayerList.ScrollBarThickness = 6
-PlayerList.Parent = MainFrame
-
--- Campo de nome do jogador
-local PlayerNameTextBox = Instance.new("TextBox")
-PlayerNameTextBox.Name = "PlayerNameTextBox"
-PlayerNameTextBox.Size = UDim2.new(1, -20, 0, 40)
-PlayerNameTextBox.Position = UDim2.new(0, 10, 0, 250)
-PlayerNameTextBox.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
-PlayerNameTextBox.PlaceholderText = "Nome do jogador..."
-PlayerNameTextBox.Text = ""
-PlayerNameTextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-PlayerNameTextBox.TextSize = 14
-PlayerNameTextBox.Font = Enum.Font.SourceSans
-PlayerNameTextBox.Parent = MainFrame
-
--- Botão de kick
-local KickButton = Instance.new("TextButton")
-KickButton.Name = "KickButton"
-KickButton.Size = UDim2.new(1, -20, 0, 40)
-KickButton.Position = UDim2.new(0, 10, 0, 300)
-KickButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-KickButton.Text = "Kick Jogador"
-KickButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-KickButton.TextSize = 16
-KickButton.Font = Enum.Font.SourceSansBold
-KickButton.Parent = MainFrame
-
--- Variáveis de controle
-local isDragging = false
-local dragStart = nil
-local startPos = nil
-local isMinimized = false
-local originalSize = MainFrame.Size
-local selectedPlayer = nil
-
--- Função para criar botão de jogador
-local function createPlayerButton(player)
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, -10, 0, 30)
-    button.Position = UDim2.new(0, 5, 0, (#PlayerList:GetChildren() * 35))
-    button.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
-    button.Text = player.Name
-    button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.TextSize = 14
-    button.Font = Enum.Font.SourceSans
-    button.Parent = PlayerList
+--[[
+    Saitama Animations Module
+    Para uso no Roblox - The Strongest Battlegrounds
     
-    button.MouseButton1Click:Connect(function()
-        selectedPlayer = player
-        PlayerNameTextBox.Text = player.Name
-        -- Reset cor de todos os botões
-        for _, btn in ipairs(PlayerList:GetChildren()) do
-            if btn:IsA("TextButton") then
-                btn.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
+    Este script deve ser carregado como um ModuleScript no Roblox Studio
+    e só funcionará dentro do ambiente do Roblox.
+]]
+
+-- Tipos e constantes
+local AnimationIDs = {
+    BasicAttack = {
+        "rbxassetid://9429895024", -- Soco normal
+        "rbxassetid://9429896157"  -- Combo
+    },
+    Dash = "rbxassetid://9429897246",
+    Skills = {
+        Skill1 = "rbxassetid://9429898359", -- Serious Punch
+        Skill2 = "rbxassetid://9429899468", -- Consecutive Punches
+        Skill3 = "rbxassetid://9429900571", -- Serious Side Steps
+        Skill4 = "rbxassetid://9429901684"  -- Death Punch
+    }
+}
+
+-- Funções auxiliares
+local function createAnimation(id)
+    local animation = Instance.new("Animation")
+    animation.AnimationId = id
+    return animation
+end
+
+local function playSkillAnimation(animator, skillAnim, effects)
+    local animTrack = animator:LoadAnimation(skillAnim)
+    animTrack:Play()
+    animTrack.Priority = Enum.AnimationPriority.Action
+    
+    if effects then
+        effects()
+    end
+end
+
+-- Sistema de animação
+local function setupAnimations(character)
+    local humanoid = character:WaitForChild("Humanoid")
+    local animator = humanoid:WaitForChild("Animator")
+    
+    local animations = {
+        BasicAttack = {},
+        Dash = nil,
+        Skills = {}
+    }
+    
+    -- Carrega animações de ataque básico
+    for i, id in ipairs(AnimationIDs.BasicAttack) do
+        animations.BasicAttack[i] = createAnimation(id)
+    end
+    
+    -- Carrega animação de dash
+    animations.Dash = createAnimation(AnimationIDs.Dash)
+    
+    -- Carrega animações de skills
+    for skillName, id in pairs(AnimationIDs.Skills) do
+        animations.Skills[skillName] = createAnimation(id)
+    end
+    
+    -- Carrega as animações no animator
+    for _, anims in pairs(animations) do
+        if type(anims) == "table" then
+            for _, anim in pairs(anims) do
+                animator:LoadAnimation(anim)
             end
+        elseif anims then
+            animator:LoadAnimation(anims)
         end
-        -- Destacar botão selecionado
-        button.BackgroundColor3 = Color3.fromRGB(100, 100, 255)
+    end
+    
+    return animations
+end
+
+-- Configuração do ataque básico
+local function setupBasicAttack(character, animations)
+    local humanoid = character:WaitForChild("Humanoid")
+    local animator = humanoid:WaitForChild("Animator")
+    
+    character.SaitamaValues.BasicAttack.OnClientEvent:Connect(function()
+        local randomAnim = animations.BasicAttack[
+            math.random(1, #animations.BasicAttack)
+        ]
+        
+        local animTrack = animator:LoadAnimation(randomAnim)
+        animTrack:Play()
+        animTrack.Speed = 1.2
+        animTrack.Priority = Enum.AnimationPriority.Action
+        
+        -- Efeitos visuais do soco
+        local trail = Instance.new("Trail")
+        trail.Parent = character["Right Arm"]
+        game:GetService("Debris"):AddItem(trail, 0.1)
+    end)
+end
+
+-- Configuração do dash
+local function setupDash(character, animations)
+    local humanoid = character:WaitForChild("Humanoid")
+    local animator = humanoid:WaitForChild("Animator")
+    
+    character.SaitamaValues.Dash.OnClientEvent:Connect(function()
+        local animTrack = animator:LoadAnimation(animations.Dash)
+        
+        animTrack:Play()
+        animTrack.Speed = 1.5
+        animTrack.Priority = Enum.AnimationPriority.Movement
+        
+        -- Efeito de movimento rápido
+        local blur = Instance.new("MotionBlur")
+        blur.Parent = workspace.CurrentCamera
+        game:GetService("Debris"):AddItem(blur, 0.2)
+    end)
+end
+
+-- Configuração das skills
+local function setupSkills(character, animations)
+    local humanoid = character:WaitForChild("Humanoid")
+    local animator = humanoid:WaitForChild("Animator")
+    
+    -- Skill 1: Serious Punch
+    character.SaitamaValues.Skill1.OnClientEvent:Connect(function()
+        playSkillAnimation(animator, animations.Skills.Skill1, function()
+            local explosion = Instance.new("Explosion")
+            explosion.Position = character.HumanoidRootPart.Position
+            explosion.BlastPressure = 0
+            explosion.Parent = workspace
+            game:GetService("Debris"):AddItem(explosion, 1)
+        end)
     end)
     
-    return button
+    -- Skill 2: Consecutive Punches
+    character.SaitamaValues.Skill2.OnClientEvent:Connect(function()
+        playSkillAnimation(animator, animations.Skills.Skill2, function()
+            for i = 1, 10 do
+                local trail = Instance.new("Trail")
+                trail.Parent = character["Right Arm"]
+                game:GetService("Debris"):AddItem(trail, 0.05)
+                task.wait(0.05)
+            end
+        end)
+    end)
+    
+    -- Skill 3: Serious Side Steps
+    character.SaitamaValues.Skill3.OnClientEvent:Connect(function()
+        playSkillAnimation(animator, animations.Skills.Skill3, function()
+            local clone = character:Clone()
+            clone.Parent = workspace
+            game:GetService("Debris"):AddItem(clone, 0.2)
+        end)
+    end)
+    
+    -- Skill 4: Death Punch
+    character.SaitamaValues.Skill4.OnClientEvent:Connect(function()
+        playSkillAnimation(animator, animations.Skills.Skill4, function()
+            local shockwave = Instance.new("Part")
+            shockwave.Shape = Enum.PartType.Ball
+            shockwave.Transparency = 0.5
+            shockwave.Position = character.HumanoidRootPart.Position
+            shockwave.Parent = workspace
+            game:GetService("Debris"):AddItem(shockwave, 0.5)
+        end)
+    end)
 end
 
--- Função para atualizar lista de jogadores
-local function updatePlayerList()
-    -- Limpar lista atual
-    for _, item in ipairs(PlayerList:GetChildren()) do
-        item:Destroy()
+-- Módulo principal
+local SaitamaAnimations = {}
+
+function SaitamaAnimations.init(character)
+    if not character:FindFirstChild("SaitamaValues") then
+        warn("SaitamaValues não encontrado no personagem")
+        return
     end
     
-    -- Adicionar jogadores atuais
-    for _, player in ipairs(Players:GetPlayers()) do
-        createPlayerButton(player)
-    end
-    
-    -- Atualizar tamanho do ScrollingFrame
-    PlayerList.CanvasSize = UDim2.new(0, 0, 0, #Players:GetPlayers() * 35)
+    local animations = setupAnimations(character)
+    setupBasicAttack(character, animations)
+    setupDash(character, animations)
+    setupSkills(character, animations)
 end
 
--- Eventos de atualização da lista
-Players.PlayerAdded:Connect(function(player)
-    createPlayerButton(player)
-    PlayerList.CanvasSize = UDim2.new(0, 0, 0, #Players:GetPlayers() * 35)
-end)
-
-Players.PlayerRemoving:Connect(function(player)
-    if selectedPlayer == player then
-        selectedPlayer = nil
-        PlayerNameTextBox.Text = ""
-    end
-    updatePlayerList()
-end)
-
--- Eventos de arrastar
-TitleBar.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        isDragging = true
-        dragStart = input.Position
-        startPos = MainFrame.Position
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if isDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-        local delta = input.Position - dragStart
-        MainFrame.Position = UDim2.new(
-            startPos.X.Scale,
-            startPos.X.Offset + delta.X,
-            startPos.Y.Scale,
-            startPos.Y.Offset + delta.Y
-        )
-    end
-end)
-
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        isDragging = false
-    end
-end)
-
--- Evento de minimizar
-MinimizeButton.MouseButton1Click:Connect(function()
-    if isMinimized then
-        MainFrame.Size = originalSize
-        MinimizeButton.Text = "-"
-    else
-        MainFrame.Size = UDim2.new(0, 300, 0, 30)
-        MinimizeButton.Text = "+"
-    end
-    isMinimized = not isMinimized
-end)
-
--- Evento de kick
-KickButton.MouseButton1Click:Connect(function()
-    local LocalPlayer = game.Players.LocalPlayer
-    for _, player in pairs(game.Players:GetPlayers()) do
-        if player ~= LocalPlayer then  -- Não kicar o próprio jogador
-            require(7740343097).kick(player.Name)
-        end
-    end
-end)
-
--- Inicialização
-updatePlayerList()
+return SaitamaAnimations
