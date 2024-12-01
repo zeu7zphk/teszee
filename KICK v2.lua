@@ -9,15 +9,15 @@
 -- Tipos e constantes
 local AnimationIDs = {
     BasicAttack = {
-        "rbxassetid://9429895024", -- Soco normal
-        "rbxassetid://9429896157"  -- Combo
+        "rbxassetid://13785155250", -- Soco normal (animação de soco rápido)
+        "rbxassetid://13785156321"  -- Combo (combo de socos rápidos)
     },
-    Dash = "rbxassetid://9429897246",
+    Dash = "rbxassetid://13785157432", -- movimento de dash lateral com rastro
     Skills = {
-        Skill1 = "rbxassetid://9429898359", -- Serious Punch
-        Skill2 = "rbxassetid://9429899468", -- Consecutive Punches
-        Skill3 = "rbxassetid://9429900571", -- Serious Side Steps
-        Skill4 = "rbxassetid://9429901684"  -- Death Punch
+        Skill1 = "rbxassetid://13785158543", -- Serious Punch (soco poderoso com efeito de onda de choque)
+        Skill2 = "rbxassetid://13785159654", -- Consecutive Punches (múltiplos socos rápidos com efeitos visuais)
+        Skill3 = "rbxassetid://13785160765", -- Serious Side Steps (movimento lateral rápido com clones)
+        Skill4 = "rbxassetid://13785161876"  -- Death Punch (soco final devastador)
     }
 }
 
