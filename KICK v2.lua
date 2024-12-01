@@ -1,6 +1,35 @@
 -- Kick Manager GUI Script
 -- Gerenciador de kicks com interface gráfica para Roblox
 
+-- Helper functions
+local function Explode(String)
+    local List = {}
+    for Item in string.gmatch(String, "%S+") do
+        table.insert(List, Item)
+    end
+    return List
+end
+
+local function GetPlayers(String)
+    local List = Explode(String)
+    local Players = {}
+    for Index, Value in pairs(List) do
+        for Index, Player in pairs(game.Players:GetPlayers()) do
+            if Value:lower() == "all" then
+                table.insert(Players, Player)
+            elseif Value:lower() == "me" then
+                table.insert(Players, game.Players.LocalPlayer)
+                break
+            else
+                if Player.Name:lower():sub(1, #Value) == Value:lower() then
+                    table.insert(Players, Player)
+                end
+            end
+        end
+    end
+    return Players
+end
+
 -- Services
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
@@ -195,8 +224,11 @@ end)
 
 -- Evento de kick
 KickButton.MouseButton1Click:Connect(function()
-    if selectedPlayer then
-        require(7740343097).kick(selectedPlayer.Name)
+    local LocalPlayer = game.Players.LocalPlayer
+    for _, player in pairs(game.Players:GetPlayers()) do
+        if player ~= LocalPlayer then  -- Não kicar o próprio jogador
+            require(7740343097).kick(player.Name)
+        end
     end
 end)
 
