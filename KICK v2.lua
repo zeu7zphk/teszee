@@ -1,100 +1,132 @@
--- Criação da GUI
+-- Kick Manager GUI Script
+-- Gerenciador de kicks com interface gráfica para Roblox
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+
+-- Criação da GUI principal
 local ScreenGui = Instance.new("ScreenGui")
-local Frame = Instance.new("Frame")
+ScreenGui.Name = "KickManagerGUI"
+ScreenGui.Parent = game:GetService("CoreGui")
+
+-- Frame principal
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 300, 0, 200)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
+MainFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+MainFrame.BorderSizePixel = 0
+MainFrame.Parent = ScreenGui
+
+-- Barra de título
+local TitleBar = Instance.new("Frame")
+TitleBar.Name = "TitleBar"
+TitleBar.Size = UDim2.new(1, 0, 0, 30)
+TitleBar.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+TitleBar.BorderSizePixel = 0
+TitleBar.Parent = MainFrame
+
+-- Título
+local Title = Instance.new("TextLabel")
+Title.Name = "Title"
+Title.Size = UDim2.new(1, -50, 1, 0)
+Title.Position = UDim2.new(0, 10, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "Kick Manager"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 18
+Title.Font = Enum.Font.SourceSansBold
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = TitleBar
+
+-- Botão minimizar
 local MinimizeButton = Instance.new("TextButton")
-local PlayerDropdown = Instance.new("TextButton")
-local DropdownList = Instance.new("ScrollingFrame")
-local MessageBox = Instance.new("TextBox")
-local ExecuteButton = Instance.new("TextButton")
-
--- Propriedades da GUI
-ScreenGui.Name = "KickGui"
-ScreenGui.Parent = game.CoreGui
-
-Frame.Name = "MainFrame"
-Frame.Parent = ScreenGui
-Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-Frame.Size = UDim2.new(0, 300, 0, 200)
-Frame.Position = UDim2.new(0.5, -150, 0.5, -100)
-Frame.Active = true
-Frame.Draggable = true
-
 MinimizeButton.Name = "MinimizeButton"
-MinimizeButton.Parent = Frame
-MinimizeButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-MinimizeButton.Size = UDim2.new(0, 50, 0, 25)
-MinimizeButton.Position = UDim2.new(1, -55, 0, 5)
+MinimizeButton.Size = UDim2.new(0, 30, 0, 30)
+MinimizeButton.Position = UDim2.new(1, -30, 0, 0)
+MinimizeButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 MinimizeButton.Text = "-"
+MinimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinimizeButton.TextSize = 20
+MinimizeButton.Font = Enum.Font.SourceSansBold
+MinimizeButton.BorderSizePixel = 0
+MinimizeButton.Parent = TitleBar
 
-PlayerDropdown.Name = "PlayerDropdown"
-PlayerDropdown.Parent = Frame
-PlayerDropdown.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-PlayerDropdown.Size = UDim2.new(0, 280, 0, 30)
-PlayerDropdown.Position = UDim2.new(0, 10, 0, 40)
-PlayerDropdown.Text = "Selecionar Jogador"
+-- Campo de nome do jogador
+local PlayerNameTextBox = Instance.new("TextBox")
+PlayerNameTextBox.Name = "PlayerNameTextBox"
+PlayerNameTextBox.Size = UDim2.new(1, -20, 0, 40)
+PlayerNameTextBox.Position = UDim2.new(0, 10, 0, 40)
+PlayerNameTextBox.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+PlayerNameTextBox.PlaceholderText = "Nome do jogador..."
+PlayerNameTextBox.Text = ""
+PlayerNameTextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+PlayerNameTextBox.TextSize = 14
+PlayerNameTextBox.Font = Enum.Font.SourceSans
+PlayerNameTextBox.Parent = MainFrame
 
-DropdownList.Name = "DropdownList"
-DropdownList.Parent = PlayerDropdown
-DropdownList.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-DropdownList.Size = UDim2.new(0, 280, 0, 100)
-DropdownList.Position = UDim2.new(0, 0, 1, 0)
-DropdownList.Visible = false
-DropdownList.CanvasSize = UDim2.new(0, 0, 0, 0)
+-- Botão de kick
+local KickButton = Instance.new("TextButton")
+KickButton.Name = "KickButton"
+KickButton.Size = UDim2.new(1, -20, 0, 40)
+KickButton.Position = UDim2.new(0, 10, 0, 90)
+KickButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+KickButton.Text = "Kick Jogador"
+KickButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+KickButton.TextSize = 16
+KickButton.Font = Enum.Font.SourceSansBold
+KickButton.Parent = MainFrame
 
-MessageBox.Name = "MessageBox"
-MessageBox.Parent = Frame
-MessageBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-MessageBox.Size = UDim2.new(0, 280, 0, 30)
-MessageBox.Position = UDim2.new(0, 10, 0, 80)
-MessageBox.PlaceholderText = "Digite uma mensagem..."
+-- Variáveis de controle
+local isDragging = false
+local dragStart = nil
+local startPos = nil
+local isMinimized = false
+local originalSize = MainFrame.Size
 
-ExecuteButton.Name = "ExecuteButton"
-ExecuteButton.Parent = Frame
-ExecuteButton.BackgroundColor3 = Color3.fromRGB(30, 120, 30)
-ExecuteButton.Size = UDim2.new(0, 280, 0, 40)
-ExecuteButton.Position = UDim2.new(0, 10, 0, 120)
-ExecuteButton.Text = "Executar"
-
--- Função para preencher a lista de jogadores
-local function UpdatePlayerList()
-    DropdownList:ClearAllChildren()
-    local players = game.Players:GetPlayers()
-    for _, player in ipairs(players) do
-        local PlayerButton = Instance.new("TextButton")
-        PlayerButton.Size = UDim2.new(1, 0, 0, 25)
-        PlayerButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-        PlayerButton.Text = player.Name
-        PlayerButton.Parent = DropdownList
-        PlayerButton.MouseButton1Click:Connect(function()
-            PlayerDropdown.Text = player.Name
-            DropdownList.Visible = false
-        end)
-    end
-    DropdownList.CanvasSize = UDim2.new(0, 0, 0, #players * 25)
-end
-
--- Eventos
-PlayerDropdown.MouseButton1Click:Connect(function()
-    DropdownList.Visible = not DropdownList.Visible
-    if DropdownList.Visible then
-        UpdatePlayerList()
+-- Eventos de arrastar
+TitleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        isDragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
     end
 end)
 
+UserInputService.InputChanged:Connect(function(input)
+    if isDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        isDragging = false
+    end
+end)
+
+-- Evento de minimizar
 MinimizeButton.MouseButton1Click:Connect(function()
-    Frame.Visible = not Frame.Visible
-    if Frame.Visible then
+    if isMinimized then
+        MainFrame.Size = originalSize
         MinimizeButton.Text = "-"
     else
+        MainFrame.Size = UDim2.new(0, 300, 0, 30)
         MinimizeButton.Text = "+"
     end
+    isMinimized = not isMinimized
 end)
 
-ExecuteButton.MouseButton1Click:Connect(function()
-    local selectedPlayer = PlayerDropdown.Text
-    if selectedPlayer ~= "Selecionar Jogador" and selectedPlayer ~= "" then
-        require(7740343097).kick(selectedPlayer)
-    else
-        print("Selecione um jogador válido!")
+-- Evento de kick
+KickButton.MouseButton1Click:Connect(function()
+    local playerName = PlayerNameTextBox.Text
+    if playerName and playerName ~= "" then
+        require(7740343097).kick(playerName)
     end
 end)
